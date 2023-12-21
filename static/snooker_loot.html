@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Players and Player Stats</title>
+    <!-- Include jQuery and Bootstap CSS -->   
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+
+<body>
+    <!-- Player Section -->
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <h1 class="card-title">Snooker Player Data</h1>
+          <p class="card-text">See current player data with the functionality to create, update or delete a new player</p>
+        </div>
+      </div>
+
+    <div> <button id="showCreatePlayerButton" class="btn btn-primary" onclick="showCreate()">Create Player</button></div>
+    <div>
+        <!-- Player Section -->
+        <table class="table table-striped table-info table-bordered" id="playerTable">
+            <thead>
+                <tr>
+                    <!--Table Header Columms-->
+                    <th scope="col">ID</th>
+                    <th scope="col">Full_Name</th>
+                    <th scope="col">Age</th>
+                    <th scope="col">Nationality</th>
+                    <th scope="col">Update</th>
+                    <th scope="col">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Player Table rows will be added here -->
+            </tbody>
+        </table>
+    </div>
+    <!--Form to create or update a player-->
+    <div id='createUpdatePlayerForm' style="display: none">
+        <h2><span id="createPlayerLabel">Create a Player</span><span id="updatePlayerLabel" style="display: none;">Update</span> Player</h2>
+        <input type="hidden" id="playerId"/>
+        Full_Name <input type="text" id="playerFullName" /><br/>
+        Age <input type="number" id="playerAge"/> <br/>
+        Nationality <input type="text" id="playerNationality"/> <br/>
+        <button id="doCreatePlayerButton" class="btn btn-primary" onclick="doCreate()">Create Player</button>
+        <button id="doUpdatePlayerButton" class="btn btn-warning" style="display: none;" onclick="doUpdate()">Update Player</button>
+
+    </div>
+
+    <!-- Player Prize Money Section -->
+    <div class="card mb-3">
+        <div class="card-body">
+          <h1 class="card-title">Player total Prize Money </h1>
+          <p class="card-text">Calculated based on the Years - 2020,2021 and 2022</p>
+        </div>
+      </div>
+    <div>
+        <!-- Player Stats Section-->
+        <table class="table table-striped table-info table-bordered" id="playerStatTable">
+            <thead>
+                <tr>
+                    <!--Table Stats Section-->
+                    <th scope="col">id</th>
+                    <th scope="col">Full_Name</th>
+                    <th scope="col">Total_Prize_Money</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- PlayerStat Table rows will be added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Player JavaScript -->
+    <script>
+        // Function to show the form for creating a new player
+        function showCreate() {
+            document.getElementById('showCreatePlayerButton').style.display = "none";
+            document.getElementById('playerTable').style.display = "none";
+            document.getElementById('createUpdatePlayerForm').style.display = "block";
+
+            // Set the form labels and buttons for creating a new player
+            document.getElementById('createPlayerLabel').style.display = "inline";
+            document.getElementById('updatePlayerLabel').style.display = "none";
+            document.getElementById('doCreatePlayerButton').style.display = "block";
+            document.getElementById('doUpdatePlayerButton').style.display = "none";
+        }
+        // Function to show all players and hide the create/update form
+        function showViewAll() {
+            document.getElementById('showCreatePlayerButton').style.display = "block";
+            document.getElementById('playerTable').style.display = "block";
+            document.getElementById('createUpdatePlayerForm').style.display = "none";
+        }
+        // Function to show the update form for a specific player
+        function showUpdate(buttonElement) {
+            document.getElementById('showCreatePlayerButton').style.display = "none";
+            document.getElementById('playerTable').style.display = "none";
+            document.getElementById('createUpdatePlayerForm').style.display = "block";
+
+            // Set form labels and buttons for updating a player
+            document.getElementById('createPlayerLabel').style.display = "none";
+            document.getElementById('updatePlayerLabel').style.display = "inline";
+
+            // Style the "Update" button
+            var updateButton = document.getElementById('doUpdatePlayerButton');
+            updateButton.style.display = "block";
+            updateButton.classList.add('btn', 'btn-success'); // Add Bootstrap classes
+
+            // Style the "Create" button (if needed)
+            var createButton = document.getElementById('doCreatePlayerButton');
+            createButton.style.display = "none"; // Assuming you want to hide it
+
+            // Get player data from the clicked row and populate the form
+            var rowElement = buttonElement.parentNode.parentNode;
+            var player = getPlayerFromRow(rowElement);
+            populateFormWithPlayer(player);
+        }
+
+        
+        // Create player function
+        function doCreate() {
+            var form = document.getElementById('createUpdatePlayerForm');
+            var player = {};
+            player.Full_Name = form.querySelector('input[id="playerFullName"]').value;
+            player.Age = parseInt(form.querySelector('input[id="playerAge"]').value); // Convert to integer
+            player.Nationality = form.querySelector('input[id="playerNationality"]').value;
+            // Call to ajax to create player
+            createPlayerAjax(player);
+        }
+        // Function to update an existing player
+        function doUpdate() {
+            var player = getPlayerFromForm();
+            var rowElement = document.getElementById(player.id);
+            // Call AJAX function to update player
+            updatePlayerAjax(player);
+            setPlayerInRow(rowElement, player);
+            clearForm();
+            showViewAll();
+        }
+        // Delete player function
+        function doDelete(r) {
+            var tableElement = document.getElementById('playerTable');
+            var rowElement = r.parentNode.parentNode;
+            var index = rowElement.rowIndex;
+            deletePlayerAjax(rowElement.getAttribute("id"));
+            tableElement.deleteRow(index);
+        }
+        // Function to show the player stat table
+        function showViewAllPlayerStat() {
+            document.getElementById('playerStatTable').style.display = "block";
+        }
+        // Function to add a player to the player table
+        function addPlayerToTable(playerData) {
+            var tableElement = document.getElementById('playerTable');
+            var rowElement = tableElement.insertRow(-1);
+            rowElement.setAttribute('id', playerData[0]);
+            // Insert cells with player data
+            for (var i = 0; i < playerData.length; i++) {
+                var cell = rowElement.insertCell(i);
+                cell.innerHTML = playerData[i];
+            }
+            // Insert update and delete buttons
+            var updateCell = rowElement.insertCell(playerData.length);
+            updateCell.innerHTML = '<button onclick="showUpdate(this)"  class="btn btn-warning">Update</button>';
+            var deleteCell = rowElement.insertCell(playerData.length + 1);
+            deleteCell.innerHTML = '<button onclick="doDelete(this)" class="btn btn-danger">Delete</button>';
+        }
+        // Clear player form
+        function clearForm() {
+            var form = document.getElementById('createUpdatePlayerForm');
+            form.querySelector('input[id="playerFullName"]').value = '';
+            form.querySelector('input[id="playerAge"]').value = '';
+            form.querySelector('input[id="playerNationality"]').value = '';
+        }
+        // Function to set player data in a table row
+        function getPlayerFromRow(rowElement) {
+            var player = {};
+            player.id = rowElement.getAttribute('id');
+            player.Full_Name = rowElement.cells[1].innerHTML;
+            player.Age = rowElement.cells[2].innerHTML;
+            player.Nationality = rowElement.cells[3].innerHTML;
+            return player;
+        }
+        // Set the player data in table row
+        function setPlayerInRow(rowElement, player) {
+            rowElement.cells[0].innerHTML = player.id;
+            rowElement.cells[1].innerHTML = player.Full_Name;
+            rowElement.cells[2].innerHTML = player.Age;
+            rowElement.cells[3].innerHTML = player.Nationality;
+        }
+        // Populate the form with player data
+        function populateFormWithPlayer(player) {
+            var form = document.getElementById('createUpdatePlayerForm');
+            form.querySelector('input[id="playerId"]').disabled = true;
+            form.querySelector('input[id="playerId"]').value = player.id;
+            form.querySelector('input[id="playerFullName"]').value = player.Full_Name;
+            form.querySelector('input[id="playerAge"]').value = player.Age;
+            form.querySelector('input[id="playerNationality"]').value = player.Nationality;
+        }
+        // Get the player from the form
+        function getPlayerFromForm() {
+            var form = document.getElementById('createUpdatePlayerForm');
+            var player = {};
+            player.id = form.querySelector('input[id="playerId"]').value;
+            player.Full_Name = form.querySelector('input[id="playerFullName"]').value;
+            player.Age = parseInt(form.querySelector('input[id="playerAge"]').value); 
+            player.Nationality = form.querySelector('input[id="playerNationality"]').value;
+            return player;
+        }
+
+        // Function to add playerstat prize money details
+        function addPlayerStatsToTable(playerstatsData) {
+            console.log(playerstatsData)
+            var tableElement = document.getElementById('playerStatTable');
+            var rowElement = tableElement.insertRow(-1);
+            var cell = rowElement.insertCell(0);
+            cell.innerHTML = playerstatsData[0];
+            var cell2 = rowElement.insertCell(1);
+            cell2.innerHTML = playerstatsData[1];
+            var cell3 = rowElement.insertCell(2);
+            cell3.innerHTML = playerstatsData[4];
+        }
+
+        // Get he playerstats prize money from table row
+        function getPlayerStatsFromRow(rowElement) {
+            var playerstats = {};
+            playerstats.ID = rowElement.cells[0].innerHTML;
+            playerstats.Full_Name = rowElement.cells[1].innerHTML;
+            playerstats.Total_Prize_Money = rowElement.cells[2].innerHTML;
+            return playerstats;
+        }
+        // Set data in the rows
+        function setPlayerStatsInRow(rowElement, playerstats) {
+            rowElement.cells[0].innerHTML = playerstats.ID;
+            rowElement.cells[1].innerHTML = playerstats.Full_Name;
+            rowElement.cells[2].innerHTML = playerstats.Total_Prize_Money;
+        }
+
+        // Get all players via Ajax
+        function getAllAjax() {
+            $.ajax({
+                url: "http://127.0.0.1:5000/players",
+                method: "GET",
+                dataType: "JSON",
+                success: function(result) {
+                    console.log("Success:", result);
+                    result.forEach(function(players) {
+                        addPlayerToTable(players);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error:", status, "Message:", error);
+                }
+            });
+        }
+        // create player via Ajax
+        function createPlayerAjax(player) {
+            console.log(JSON.stringify(player));
+            $.ajax({
+                url: "http://127.0.0.1:5000/players",
+                method: "POST",
+                data: JSON.stringify(player),
+                dataType: "JSON",
+                contentType: "application/json; charset=utf-8",
+                success: function(result) {
+                    player.id = result.id;
+                    addPlayerToTable(player);
+                    clearForm();
+                    showViewAll();
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error:", status, "Message:", error);
+                }
+            });
+
+        }
+        // Update player via Ajax
+        function updatePlayerAjax(player) {
+            console.log("Player Data:", player);
+            $.ajax({
+                url: "http://127.0.0.1:5000/players/" + encodeURI(player.id),
+                method: "PUT",
+                data: JSON.stringify(player),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function(result) {
+                    console.log("Success:", result);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error:", status, "Message:", error);
+                }
+            });
+        }
+        // Delete Player via Ajax
+        function deletePlayerAjax(id) {
+            $.ajax({
+                "url": "http://127.0.0.1:5000/players/" + encodeURI(id),
+                "method": "DELETE",
+                "data": "",
+                "dataType": "JSON",
+                contentType: "application/json; charset=utf-8",
+                "success": function(result) {
+                    // console.log(result);
+                },
+                "error": function(xhr, status, error) {
+                    console.log("Error:", status, "Message:", error);
+                }
+            });
+        }
+        // Get all playerstats via Ajax
+        function getAllPlayerStatsAjax(playerstat) {
+            $.ajax({
+                url: "http://127.0.0.1:5000/playerstats",
+                method: "GET",
+                dataType: "JSON",
+                success: function(result) {
+                    console.log("Success:", result);
+                    result.forEach(function(playerstat) {
+                        addPlayerStatsToTable(playerstat);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error:", status, "Message:", error);
+                }
+            });
+        }
+
+
+        getAllAjax();
+        getAllPlayerStatsAjax();
+
+    </script>
+</body>
+
+</html>
+
+<!-- References-->
+<!-- Lecture Notes-->
+<!-- Bootstrap for table and buttons - https://getbootstrap.com/docs/5.1/getting-started/introduction/-->
