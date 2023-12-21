@@ -246,7 +246,7 @@
         // Get all players via Ajax
         function getAllAjax() {
             $.ajax({
-                url: "http://127.0.0.1:5000/players",
+                url: "/players",
                 method: "GET",
                 dataType: "JSON",
                 success: function(result) {
@@ -264,7 +264,7 @@
         function createPlayerAjax(player) {
             console.log(JSON.stringify(player));
             $.ajax({
-                url: "http://127.0.0.1:5000/players",
+                url: "/players",
                 method: "POST",
                 data: JSON.stringify(player),
                 dataType: "JSON",
@@ -285,7 +285,7 @@
         function updatePlayerAjax(player) {
             console.log("Player Data:", player);
             $.ajax({
-                url: "http://127.0.0.1:5000/players/" + encodeURI(player.id),
+                url: "/players/" + encodeURI(player.id),
                 method: "PUT",
                 data: JSON.stringify(player),
                 dataType: "json",
@@ -301,7 +301,7 @@
         // Delete Player via Ajax
         function deletePlayerAjax(id) {
             $.ajax({
-                "url": "http://127.0.0.1:5000/players/" + encodeURI(id),
+                "url": "/players/" + encodeURI(id),
                 "method": "DELETE",
                 "data": "",
                 "dataType": "JSON",
@@ -317,7 +317,7 @@
         // Get all playerstats via Ajax
         function getAllPlayerStatsAjax(playerstat) {
             $.ajax({
-                url: "http://127.0.0.1:5000/playerstats",
+                url: "/playerstats",
                 method: "GET",
                 dataType: "JSON",
                 success: function(result) {
