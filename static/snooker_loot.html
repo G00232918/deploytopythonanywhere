@@ -246,7 +246,7 @@
         // Get all players via Ajax
         function getAllAjax() {
             $.ajax({
-                url: "/players",
+                url: "https://jamesconnolly147.pythonanywhere.com/players",
                 method: "GET",
                 dataType: "JSON",
                 success: function(result) {
@@ -264,7 +264,7 @@
         function createPlayerAjax(player) {
             console.log(JSON.stringify(player));
             $.ajax({
-                url: "/players",
+                url: "https://jamesconnolly147.pythonanywhere.com/players",
                 method: "POST",
                 data: JSON.stringify(player),
                 dataType: "JSON",
@@ -301,7 +301,7 @@
         // Delete Player via Ajax
         function deletePlayerAjax(id) {
             $.ajax({
-                "url": "/players/" + encodeURI(id),
+                "url": "https://jamesconnolly147.pythonanywhere.com/players/" + encodeURI(id),
                 "method": "DELETE",
                 "data": "",
                 "dataType": "JSON",
@@ -317,7 +317,7 @@
         // Get all playerstats via Ajax
         function getAllPlayerStatsAjax(playerstat) {
             $.ajax({
-                url: "/playerstats",
+                url: "https://jamesconnolly147.pythonanywhere.com/playerstats",
                 method: "GET",
                 dataType: "JSON",
                 success: function(result) {
