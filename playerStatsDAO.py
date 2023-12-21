@@ -33,6 +33,7 @@ class PlayerStatsDAO:
         self.connection.close()
         self.cursor.close()
 
+    # get cumulative prize for each player based on 3 years
     def find_cumulative_prize_by_year(self):
         cursor = self.db.cursor()
 
@@ -44,19 +45,10 @@ class PlayerStatsDAO:
             JOIN playerstats ps ON p.Full_Name = ps.Full_Name
             group by p.ID, p.Full_Name, p.Age, p.Nationality
         """
-        #values = (ID,Full_Name, Total_Prize_Money)
         cursor.execute(sql)
         result = cursor.fetchall()
         return result
     
-
-
-    # function to map column names to their values in a row
-    def convertToDictionary(self, result):
-        colnames=['ID', 'Full_Name', 'Total_Prize_Money']
-        # iterating through rows creaing keyvalue pair
-        playerStat = {colname: result[idx] for idx, colname in enumerate(colnames)}
-        return playerStat
     
     
 playerStatsDAO = PlayerStatsDAO()

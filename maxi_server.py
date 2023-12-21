@@ -16,22 +16,26 @@ USER_DATA = {
     "user": "password"
 }
 
+# checking the password
+
 @auth.verify_password
 def verify_password(username, password):
     if username in USER_DATA and USER_DATA[username] == password:
         return username
 
+# sending to the webpage
 @app.route('/')
 @auth.login_required
 def home():
     return app.send_static_file('snooker_loot.html')
     
-    
+# get all players from players table    
 @app.route('/players', methods=['GET'])
 def getAll():
     results = PlayerDAO.getAll()
     return jsonify(results)
-    
+
+# find player by id    
 @app.route('/players/<int:id>')
 def find_player_by_id(id):
     found_player = PlayerDAO.findByID(id)
@@ -39,7 +43,7 @@ def find_player_by_id(id):
         abort(404)
     return jsonify(found_player)
 
-
+# create a new player
 @app.route('/players', methods=['POST'])
 def create_player():
     if not request.json:
@@ -54,6 +58,7 @@ def create_player():
     player['id'] = newId
     return jsonify(player)
 
+# update player
 @app.route('/players/<int:id>', methods=['PUT'])
 def update(id):
     foundPlayer = PlayerDAO.findByID(id)
@@ -79,7 +84,7 @@ def update(id):
     PlayerDAO.update(values)
     return jsonify(foundPlayer)
 
-
+# delete player
 @app.route('/players/<int:id>' , methods=['DELETE'])
 def delete(id):
     PlayerDAO.delete(id)
@@ -87,6 +92,7 @@ def delete(id):
 
 # playerstats table calls
 
+# get playerstat players cumulative prize money
 @app.route('/playerstats')
 def getAllPlayerStats():
     try:
@@ -95,7 +101,6 @@ def getAllPlayerStats():
     except Exception as e:
         print(f"Error getting playerstats: {e}")
         abort(500)
-
 
 
 if __name__ == "__main__":

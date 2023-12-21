@@ -54,7 +54,6 @@ class PlayerDAO:
         return result
 
     # find player from players table by searching by ID
-    # test with - curl http://127.0.0.1:5000/players/1
     def findByID(self, id):
         cursor = self.getCursor()
         sql = "SELECT * FROM players WHERE id = %s"
